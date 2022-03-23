@@ -4,3 +4,8 @@ const _GLobal_Link = {
 }
 
 export default _GLobal_Link;
+/**
+ * git remote add origin https://github.com/jimmy-bull/bid-react-project.git
+git branch -M main
+git push -u origin main
+ */
