@@ -1,0 +1,50 @@
+/* @import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@200&display=swap'); */
+
+.headBody {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    justify-content: space-between;
+    margin-left:30px;
+    margin-right: 30px;
+}
+
+.link {
+    padding-left: 20px;
+    padding-right: 20px;
+    text-decoration: none;
+    color: gray;
+    font-weight: 500;
+    font-size: 0.9375rem;
+}
+
+.icon-mobile {
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+.mobile-menu {
+    display: none;
+}
+
+@media screen and (max-width: 1000px) {
+    .headBody {
+        margin-left: 0px;
+        margin-right: 0px
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .headBody {
+        display: none;
+    }
+    .mobile-menu {
+        margin-top: 10px;
+        display: block;
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+        justify-content: space-between;
+        flex: 1;
+    }
+}
