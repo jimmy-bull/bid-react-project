@@ -1,17 +1,57 @@
-import React, { useLayoutEffect, useState, useEffect } from 'react';
+import React, { useLayoutEffect, useState, useEffect, useRef } from 'react';
 import { useParams } from "react-router-dom";
 import axios from 'axios';
 import { IonIcon } from "react-ion-icon";
 import '../style/products.css'
 import { Link } from "react-router-dom";
 import _GLobal_Link from './global';
+import OutlinedInput from '@mui/material/OutlinedInput';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import ListItemText from '@mui/material/ListItemText';
+import Select from '@mui/material/Select';
+import Checkbox from '@mui/material/Checkbox';
+
+const ITEM_HEIGHT = 48;
+const ITEM_PADDING_TOP = 8;
+const MenuProps = {
+    PaperProps: {
+        style: {
+            maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+            width: 250,
+        },
+    },
+};
+
+const names = [
+    'Oliver Hansen',
+    'Van Henry',
+    'April Tucker',
+    'Ralph Hubbard',
+    'Omar Alexander',
+    'Carlos Abbott',
+    'Miriam Wagner',
+    'Bradley Wilkerson',
+    'Virginia Andrews',
+    'Kelly Snyder',
+];
 function Products() {
     const { id, category } = useParams();
     const [getProductsid, setProductsid] = useState([])
     const [getProductsName, setProductsName] = useState([])
     const [getfinishdate, setfinishdate] = useState([])
     const [getProductImage, setProductImage] = useState([])
+    const [ok, setOk] = useState([])
+    /**
+     * color:[], brand:[]
+     */
+    // Accepts the array and key
     useLayoutEffect(() => {
+
+        setOk([])
+
+
         axios.get(_GLobal_Link.link + "product?filter[f_catid]=" + id + "&include=media", {
             headers: {
                 "content-type": "application/json",
@@ -32,7 +72,45 @@ function Products() {
                 }
             }
         })
+
+
+
     }, [])
+    // Group by color as key to the person array
+    let keys = [];
+    let values = []
+    let idattr = [];
+    useLayoutEffect(() => {
+        axios.get(_GLobal_Link.link + "product?filter[f_catid]=" + id + "&include=attribute", {
+            headers: {
+                "content-type": "application/json",
+                'Access-Control-Allow-Credentials': true,
+                'Access-Control-Allow-Origin': true
+            },
+        }).then((res) => {
+            for (let index = 0; index < res.data.included.length; index++) {
+                keys.push(res.data.included[index].attributes["attribute.type"]);
+                values.push(res.data.included[index].attributes["attribute.label"]);
+                idattr.push(id);
+            }
+            console.log(keys)
+            console.log(values)
+            console.log(idattr)
+            
+        })
+    }, [])
+
+
+    const [personName, setPersonName] = useState([]);
+    const handleChange = (event) => {
+        const {
+            target: { value },
+        } = event;
+        setPersonName(
+            // On autofill we get a stringified value.
+            typeof value === 'string' ? value.split(',') : value,
+        );
+    };
 
 
     // Update the count down every 1 second
@@ -52,6 +130,90 @@ function Products() {
 
     return (
         <div className='carouselBody'>
+            <div className='filterBlock'>
+                <FormControl className="formControl" sx={{ m: 1 }}>
+                    <InputLabel id="demo-multiple-checkbox-label1">Tag</InputLabel>
+                    <Select
+                        labelId="demo-multiple-checkbox-label1"
+                        id="demo-multiple-checkbox1"
+                        multiple
+                        value={personName}
+                        onChange={handleChange}
+                        input={<OutlinedInput label="Tag" />}
+                        renderValue={(selected) => selected.join(', ')}
+                        MenuProps={MenuProps}
+                    >
+                        {names.map((name) => (
+                            <MenuItem key={name} value={name}>
+                                <Checkbox checked={personName.indexOf(name) > -1} />
+                                <ListItemText primary={name} />
+                            </MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
+                <FormControl className="formControl" sx={{ m: 1 }}>
+                    <InputLabel id="demo-multiple-checkbox-label2">Tag</InputLabel>
+                    <Select
+                        labelId="demo-multiple-checkbox-label2"
+                        id="demo-multiple-checkbox2"
+                        multiple
+                        value={personName}
+                        onChange={handleChange}
+                        input={<OutlinedInput label="Tag" />}
+                        renderValue={(selected) => selected.join(', ')}
+                        MenuProps={MenuProps}
+                    >
+                        {names.map((name) => (
+                            <MenuItem key={name} value={name}>
+                                <Checkbox checked={personName.indexOf(name) > -1} />
+                                <ListItemText primary={name} />
+                            </MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
+                <FormControl className="formControl" sx={{ m: 1 }}>
+                    <InputLabel id="demo-multiple-checkbox-label3">Tag</InputLabel>
+                    <Select
+                        labelId="demo-multiple-checkbox-label3"
+                        id="demo-multiple-checkbox3"
+                        multiple
+                        value={personName}
+                        onChange={handleChange}
+                        input={<OutlinedInput label="Tag" />}
+                        renderValue={(selected) => selected.join(', ')}
+                        MenuProps={MenuProps}
+                    >
+                        {names.map((name) => (
+                            <MenuItem key={name} value={name}>
+                                <Checkbox checked={personName.indexOf(name) > -1} />
+                                <ListItemText primary={name} />
+                            </MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
+                <FormControl className="formControl" sx={{ m: 1 }}>
+                    <InputLabel id="demo-multiple-checkbox-label4">Tag</InputLabel>
+                    <Select
+                        labelId="demo-multiple-checkbox-label4"
+                        id="demo-multiple-checkbox4"
+                        multiple
+                        value={personName}
+                        onChange={handleChange}
+                        input={<OutlinedInput label="Tag" />}
+                        renderValue={(selected) => selected.join(', ')}
+                        MenuProps={MenuProps}
+                    >
+                        {names.map((name) => (
+                            <MenuItem key={name} value={name}>
+                                <Checkbox checked={personName.indexOf(name) > -1} />
+                                <ListItemText primary={name} />
+                            </MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
+
+
+            </div>
             <div className='gridBody'>
                 {
                     [...new Set(getProductImage)].map((data, key) => (
@@ -81,6 +243,9 @@ function Products() {
                             </Link>
                         </div>
                     ))
+                }
+                {
+                    ok[0] !== undefined ? console.log(ok[0]) : <></>
                 }
             </div>
         </div >

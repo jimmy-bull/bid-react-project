@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useLayoutEffect } from 'react';
 import axios from 'axios';
 import '../style/products.css'
 import {
@@ -22,6 +22,8 @@ import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
 import { FreeMode, Navigation, Thumbs } from "swiper";
 import ScrollToTop from "react-scroll-to-top";
+window.Pusher = require("pusher-js");
+
 function Detail() {
     const [getproductName, setproductName] = useState('')
     const { id, category, categoryid, date } = useParams();
@@ -37,8 +39,11 @@ function Detail() {
     const [currentBid, setcurrentBid] = useState('');
     const [nextMinimumBid, setnextMinimumBid] = useState('');
     const [biderrDatta, setbiderrDatta] = useState([]);
+    // const [peakChange, setpeakChange] = useState(0);
+    // const [iterate, setIterate] = useState(0);
 
-    useEffect(() => {
+    useLayoutEffect(() => {
+        // setpeakChange([])
         axios.get(_GLobal_Link.link + "product?id=" + id + '&include=media', {
             headers: {
                 "content-type": "application/json",
@@ -71,15 +76,15 @@ function Detail() {
         })
     }, [])
 
-    useEffect(() => {
-        window.Pusher = require("pusher-js");
+    useLayoutEffect(() => {
         window.Echo = new Echo({
             broadcaster: "pusher",
-            key: "be9ed4785aa6b0c06a8d",
+            key: "3440a3a0631d8979ae20",
             cluster: "eu",
             forceTLS: true,
         });
         window.Echo.channel("bid-system-channel").listen(".bidsystem", (e) => {
+            console.log(e)
             if (e.currentBid === null) {
                 setcurrentBid(0);
             } else {
@@ -88,7 +93,9 @@ function Detail() {
             setnextMinimumBid(e.nextMinimumBid);
             setbiderrDatta(e.biderrDatta);
         });
-    });
+    }, [biderrDatta, nextMinimumBid, currentBid]);
+
+
 
     const onSubmit = data => {
         setisloading(true)
@@ -115,7 +122,7 @@ function Detail() {
                             if (res.data !== 'Bid added') {
                                 setbidValueFieldErrorText(res.data);
                                 setbidValueFieldError(true)
-                                setisloading(false)
+                                setisloading(false);
                             } else {
                                 setbidValueFieldError(false)
                                 setisloading(false);
@@ -128,12 +135,13 @@ function Detail() {
                                     'X-CSRF-TOKEN': document.head.querySelector('meta[name="csrf-token"]')
                                 },
                             }).then((res) => {
-
+                               // alert('jimmy')
                             })
-                            //DO NOTHING
                         })
                     }
+
                 });
+
         } else {
             setisloading(false)
             setNotconnectdError(true)
