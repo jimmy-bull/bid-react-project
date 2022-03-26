@@ -12,7 +12,6 @@ import FormControl from '@mui/material/FormControl';
 import ListItemText from '@mui/material/ListItemText';
 import Select from '@mui/material/Select';
 import Checkbox from '@mui/material/Checkbox';
-
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
 const MenuProps = {
@@ -24,34 +23,16 @@ const MenuProps = {
     },
 };
 
-const names = [
-    'Oliver Hansen',
-    'Van Henry',
-    'April Tucker',
-    'Ralph Hubbard',
-    'Omar Alexander',
-    'Carlos Abbott',
-    'Miriam Wagner',
-    'Bradley Wilkerson',
-    'Virginia Andrews',
-    'Kelly Snyder',
-];
+
 function Products() {
     const { id, category } = useParams();
     const [getProductsid, setProductsid] = useState([])
     const [getProductsName, setProductsName] = useState([])
     const [getfinishdate, setfinishdate] = useState([])
     const [getProductImage, setProductImage] = useState([])
-    const [ok, setOk] = useState([])
-    /**
-     * color:[], brand:[]
-     */
-    // Accepts the array and key
+    const [big, setBig] = useState([]);
+
     useLayoutEffect(() => {
-
-        setOk([])
-
-
         axios.get(_GLobal_Link.link + "product?filter[f_catid]=" + id + "&include=media", {
             headers: {
                 "content-type": "application/json",
@@ -72,15 +53,10 @@ function Products() {
                 }
             }
         })
-
-
-
     }, [])
-    // Group by color as key to the person array
-    let keys = [];
-    let values = []
-    let idattr = [];
-    useLayoutEffect(() => {
+
+    useEffect(() => {
+        let table = []
         axios.get(_GLobal_Link.link + "product?filter[f_catid]=" + id + "&include=attribute", {
             headers: {
                 "content-type": "application/json",
@@ -89,30 +65,61 @@ function Products() {
             },
         }).then((res) => {
             for (let index = 0; index < res.data.included.length; index++) {
-                keys.push(res.data.included[index].attributes["attribute.type"]);
-                values.push(res.data.included[index].attributes["attribute.label"]);
-                idattr.push(id);
+                table.push({ type: res.data.included[index].attributes["attribute.type"], value: res.data.included[index].attributes["attribute.label"] })
             }
-            console.log(keys)
-            console.log(values)
-            console.log(idattr)
-            
+            let result = table.reduce(function (r, a) {
+                r[a.type] = r[a.type] || [];
+                r[a.type].push(a);
+                return r;
+            }, Object.create(null));
+            setBig(result);
         })
     }, [])
 
 
     const [personName, setPersonName] = useState([]);
+    const [attrState, setattrState] = useState([])
+    let obj = {}
     const handleChange = (event) => {
         const {
-            target: { value },
+            target: { value, name },
         } = event;
-        setPersonName(
-            // On autofill we get a stringified value.
-            typeof value === 'string' ? value.split(',') : value,
-        );
+        //console.log(value)
+        // setPersonName(
+        //     // On autofill we get a stringified value.
+        //     typeof value === 'string' ? value.split(',') : value,
+        // );
+        // console.log(name + ':' + value);
+
+        // if (attrState[name] === undefined) {
+        //     setattrState(prev => {
+        //         return { ...prev, [name]: value }
+        //     })
+        // } else {
+        //     if (typeof attrState[name] === 'string' && attrState[name].indexOf(value.toString()) === -1) {
+        //         setattrState(prev => {
+        //             return { ...prev, [name]: [...[attrState[name]], value.toString()] }
+        //         })
+        //     } else if (typeof attrState[name] === 'object' && attrState[name].indexOf(value.toString()) === -1) {
+        //         setattrState(prev => {
+        //             return { ...prev, [name]: [...attrState[name], value.toString()] }
+        //         })
+        //     }
+
+        //     if (attrState[name].indexOf(value.toString()) > -1) {
+        //         var Index = attrState[name].indexOf(value.toString());
+        //         attrState[name].splice(Index, 1);
+
+        //         setattrState(prev => {
+        //             return { ...prev, [name]: attrState[name] }
+        //         })
+        //     }
+        // }
+
+        setattrState(prev => {
+            return { ...prev, [name]: value }
+        })
     };
-
-
     // Update the count down every 1 second
     const counterDate = (countDownDate, id) => {
         var now = new Date().getTime();
@@ -131,88 +138,42 @@ function Products() {
     return (
         <div className='carouselBody'>
             <div className='filterBlock'>
-                <FormControl className="formControl" sx={{ m: 1 }}>
-                    <InputLabel id="demo-multiple-checkbox-label1">Tag</InputLabel>
-                    <Select
-                        labelId="demo-multiple-checkbox-label1"
-                        id="demo-multiple-checkbox1"
-                        multiple
-                        value={personName}
-                        onChange={handleChange}
-                        input={<OutlinedInput label="Tag" />}
-                        renderValue={(selected) => selected.join(', ')}
-                        MenuProps={MenuProps}
-                    >
-                        {names.map((name) => (
-                            <MenuItem key={name} value={name}>
-                                <Checkbox checked={personName.indexOf(name) > -1} />
-                                <ListItemText primary={name} />
-                            </MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
-                <FormControl className="formControl" sx={{ m: 1 }}>
-                    <InputLabel id="demo-multiple-checkbox-label2">Tag</InputLabel>
-                    <Select
-                        labelId="demo-multiple-checkbox-label2"
-                        id="demo-multiple-checkbox2"
-                        multiple
-                        value={personName}
-                        onChange={handleChange}
-                        input={<OutlinedInput label="Tag" />}
-                        renderValue={(selected) => selected.join(', ')}
-                        MenuProps={MenuProps}
-                    >
-                        {names.map((name) => (
-                            <MenuItem key={name} value={name}>
-                                <Checkbox checked={personName.indexOf(name) > -1} />
-                                <ListItemText primary={name} />
-                            </MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
-                <FormControl className="formControl" sx={{ m: 1 }}>
-                    <InputLabel id="demo-multiple-checkbox-label3">Tag</InputLabel>
-                    <Select
-                        labelId="demo-multiple-checkbox-label3"
-                        id="demo-multiple-checkbox3"
-                        multiple
-                        value={personName}
-                        onChange={handleChange}
-                        input={<OutlinedInput label="Tag" />}
-                        renderValue={(selected) => selected.join(', ')}
-                        MenuProps={MenuProps}
-                    >
-                        {names.map((name) => (
-                            <MenuItem key={name} value={name}>
-                                <Checkbox checked={personName.indexOf(name) > -1} />
-                                <ListItemText primary={name} />
-                            </MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
-                <FormControl className="formControl" sx={{ m: 1 }}>
-                    <InputLabel id="demo-multiple-checkbox-label4">Tag</InputLabel>
-                    <Select
-                        labelId="demo-multiple-checkbox-label4"
-                        id="demo-multiple-checkbox4"
-                        multiple
-                        value={personName}
-                        onChange={handleChange}
-                        input={<OutlinedInput label="Tag" />}
-                        renderValue={(selected) => selected.join(', ')}
-                        MenuProps={MenuProps}
-                    >
-                        {names.map((name) => (
-                            <MenuItem key={name} value={name}>
-                                <Checkbox checked={personName.indexOf(name) > -1} />
-                                <ListItemText primary={name} />
-                            </MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
-
-
+                {
+                    Object.keys(big).map((data, key) => (
+                        <FormControl key={key} className="formControl" sx={{ m: 1 }}>
+                            <InputLabel id={data}>{data}
+                                {console.log()}
+                            </InputLabel>
+                            <Select
+                                labelId={data}
+                                id={data}
+                                multiple
+                                value={attrState[data] !== undefined ? attrState[data] : []}
+                                onChange={handleChange}
+                                input={<OutlinedInput label={data} />}
+                                renderValue={(selected) => selected.join(', ')}
+                                MenuProps={MenuProps}
+                                name={data}
+                            >
+                                {
+                                    Object.values(big)[key] !== undefined ?
+                                        Object.values(big)[key].map((data2, key2) => {
+                                            return data === data2.type ?
+                                                <MenuItem key={key2} value={data2.value}>
+                                                    <Checkbox checked={
+                                                        attrState[data] !== undefined ? attrState[data].indexOf(data2.value) > -1 : false
+                                                    } />
+                                                    <ListItemText primary={data2.value} />
+                                                </MenuItem>
+                                                :
+                                                <></>
+                                        })
+                                        : <></>
+                                }
+                            </Select>
+                        </FormControl>
+                    ))
+                }
             </div>
             <div className='gridBody'>
                 {
@@ -244,15 +205,10 @@ function Products() {
                         </div>
                     ))
                 }
-                {
-                    ok[0] !== undefined ? console.log(ok[0]) : <></>
-                }
+                {console.log(attrState)}
             </div>
-        </div >
-
-
+        </div>
     );
 }
 
 export default Products;
-// getfinishdate
