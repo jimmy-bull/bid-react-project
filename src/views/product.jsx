@@ -115,9 +115,9 @@ function Products() {
         //         })
         //     }
         // }
-
+        console.log(event)
         setattrState(prev => {
-            return { ...prev, [name]: value }
+            return { ...prev, [name]: value, }
         })
     };
     // Update the count down every 1 second
@@ -141,8 +141,8 @@ function Products() {
                 {
                     Object.keys(big).map((data, key) => (
                         <FormControl key={key} className="formControl" sx={{ m: 1 }}>
-                            <InputLabel id={data}>{data}
-                                {console.log()}
+                            <InputLabel id={data}>
+                                {data}
                             </InputLabel>
                             <Select
                                 labelId={data}
@@ -205,7 +205,7 @@ function Products() {
                         </div>
                     ))
                 }
-                {console.log(attrState)}
+                {console.log(big)}
             </div>
         </div>
     );
