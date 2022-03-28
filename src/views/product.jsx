@@ -1,5 +1,5 @@
 import React, { useLayoutEffect, useState, useEffect, useRef } from 'react';
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate, useLocation, useSearchParams, } from "react-router-dom";
 import axios from 'axios';
 import { IonIcon } from "react-ion-icon";
 import '../style/products.css'
@@ -12,6 +12,8 @@ import FormControl from '@mui/material/FormControl';
 import ListItemText from '@mui/material/ListItemText';
 import Select from '@mui/material/Select';
 import Checkbox from '@mui/material/Checkbox';
+import Backdrop from '@mui/material/Backdrop';
+import CircularProgress from '@mui/material/CircularProgress';
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
 const MenuProps = {
@@ -31,6 +33,9 @@ function Products() {
     const [getfinishdate, setfinishdate] = useState([])
     const [getProductImage, setProductImage] = useState([])
     const [big, setBig] = useState([]);
+    const [firstClick, setfirstClick] = useState(0);
+    let [searchParams, setSearchParams] = useSearchParams();
+    const [isloading, setisloading] = useState(false);
 
     useLayoutEffect(() => {
         axios.get(_GLobal_Link.link + "product?filter[f_catid]=" + id + "&include=media", {
@@ -65,7 +70,11 @@ function Products() {
             },
         }).then((res) => {
             for (let index = 0; index < res.data.included.length; index++) {
-                table.push({ type: res.data.included[index].attributes["attribute.type"], value: res.data.included[index].attributes["attribute.label"] })
+                table.push({
+                    type: res.data.included[index].attributes["attribute.type"],
+                    value: res.data.included[index].attributes["attribute.label"],
+                    id: res.data.included[index].attributes["attribute.id"]
+                })
             }
             let result = table.reduce(function (r, a) {
                 r[a.type] = r[a.type] || [];
@@ -79,47 +88,127 @@ function Products() {
 
     const [personName, setPersonName] = useState([]);
     const [attrState, setattrState] = useState([])
-    let obj = {}
     const handleChange = (event) => {
         const {
             target: { value, name },
         } = event;
-        //console.log(value)
-        // setPersonName(
-        //     // On autofill we get a stringified value.
-        //     typeof value === 'string' ? value.split(',') : value,
-        // );
-        // console.log(name + ':' + value);
 
-        // if (attrState[name] === undefined) {
-        //     setattrState(prev => {
-        //         return { ...prev, [name]: value }
-        //     })
-        // } else {
-        //     if (typeof attrState[name] === 'string' && attrState[name].indexOf(value.toString()) === -1) {
-        //         setattrState(prev => {
-        //             return { ...prev, [name]: [...[attrState[name]], value.toString()] }
-        //         })
-        //     } else if (typeof attrState[name] === 'object' && attrState[name].indexOf(value.toString()) === -1) {
-        //         setattrState(prev => {
-        //             return { ...prev, [name]: [...attrState[name], value.toString()] }
-        //         })
-        //     }
-
-        //     if (attrState[name].indexOf(value.toString()) > -1) {
-        //         var Index = attrState[name].indexOf(value.toString());
-        //         attrState[name].splice(Index, 1);
-
-        //         setattrState(prev => {
-        //             return { ...prev, [name]: attrState[name] }
-        //         })
-        //     }
-        // }
-        console.log(event)
         setattrState(prev => {
-            return { ...prev, [name]: value, }
+            return { ...prev, [name]: value }
         })
+        setSearchParams({ [name]: value })
+        setfirstClick(1)
     };
+    useEffect(() => {
+        setSearchParams(attrState)
+    }, [attrState]);
+
+    useEffect(() => {
+        if (firstClick === 1) {
+            setisloading(true)
+            let tableAT = []
+            for (const entry of searchParams.entries()) {
+                tableAT.push('filter[f_attrid][]=' + entry[1]);
+            }
+            if (tableAT.length > 0) {
+                //  console.log(_GLobal_Link.link + "product?include=media&" + tableAT.join('&') + "&filter[f_catid]=" + id)
+                axios.get(_GLobal_Link.link + "product?include=media&" + tableAT.join('&') + "&filter[f_catid]=" + id, {
+                    headers: {
+                        "content-type": "application/json",
+                        'Access-Control-Allow-Credentials': true,
+                        'Access-Control-Allow-Origin': true
+                    },
+                }).then((res) => {
+                    setProductImage([])
+                    setisloading(false)
+                    for (let index = 0; index < res.data.data.length; index++) {
+                        setProductsid((prev) => [...prev, [res.data.data[index].attributes['product.id']]])
+                        setProductsName((prev) => [...prev, [res.data.data[index].attributes['product.label']]])
+                        setfinishdate((prev) => [...prev, [res.data.data[index].attributes['product.dateend']]])
+                        for (let index2 = 0; index2 < 1; index2++) {
+                            for (let index3 = 0; index3 < res.data.included.length; index3++) {
+                                if (res.data.included[index3].id === res.data.data[index].relationships.media.data[index2].id) {
+                                    setProductImage((prev) => [...prev, [res.data.included[index3].attributes['media.url']]])
+                                }
+                            }
+                        }
+                    }
+                })
+
+                // let table = []
+                // axios.get(_GLobal_Link.link + "product?include=media&" + tableAT.join('&') + "&filter[f_catid]=" + id + "&include=attribute", {
+                //     headers: {
+                //         "content-type": "application/json",
+                //         'Access-Control-Allow-Credentials': true,
+                //         'Access-Control-Allow-Origin': true
+                //     },
+                // }).then((res) => {
+                //     for (let index = 0; index < res.data.included.length; index++) {
+                //         table.push({
+                //             type: res.data.included[index].attributes["attribute.type"],
+                //             value: res.data.included[index].attributes["attribute.label"],
+                //             id: res.data.included[index].attributes["attribute.id"]
+                //         })
+                //     }
+                //     let result = table.reduce(function (r, a) {
+                //         r[a.type] = r[a.type] || [];
+                //         r[a.type].push(a);
+                //         return r;
+                //     }, Object.create(null));
+                //     setBig(result);
+                // })
+            } else {
+                setProductImage([])
+                //setBig([])
+                axios.get(_GLobal_Link.link + "product?filter[f_catid]=" + id + "&include=media", {
+                    headers: {
+                        "content-type": "application/json",
+                        'Access-Control-Allow-Credentials': true,
+                        'Access-Control-Allow-Origin': true
+                    },
+                }).then((res) => {
+                    setisloading(false)
+                    for (let index = 0; index < res.data.data.length; index++) {
+                        setProductsid((prev) => [...prev, [res.data.data[index].attributes['product.id']]])
+                        setProductsName((prev) => [...prev, [res.data.data[index].attributes['product.label']]])
+                        setfinishdate((prev) => [...prev, [res.data.data[index].attributes['product.dateend']]])
+                        for (let index2 = 0; index2 < 1; index2++) {
+                            for (let index3 = 0; index3 < res.data.included.length; index3++) {
+                                if (res.data.included[index3].id === res.data.data[index].relationships.media.data[index2].id) {
+                                    setProductImage((prev) => [...prev, [res.data.included[index3].attributes['media.url']]])
+                                }
+                            }
+                        }
+                    }
+                })
+
+                // let table = []
+                // axios.get(_GLobal_Link.link + "product?filter[f_catid]=" + id + "&include=attribute", {
+                //     headers: {
+                //         "content-type": "application/json",
+                //         'Access-Control-Allow-Credentials': true,
+                //         'Access-Control-Allow-Origin': true
+                //     },
+                // }).then((res) => {
+                //     setisloading(false)
+                //     for (let index = 0; index < res.data.included.length; index++) {
+                //         table.push({
+                //             type: res.data.included[index].attributes["attribute.type"],
+                //             value: res.data.included[index].attributes["attribute.label"],
+                //             id: res.data.included[index].attributes["attribute.id"]
+                //         })
+                //     }
+                //     let result = table.reduce(function (r, a) {
+                //         r[a.type] = r[a.type] || [];
+                //         r[a.type].push(a);
+                //         return r;
+                //     }, Object.create(null));
+                //     setBig(result);
+                // })
+            }
+        }
+    }, [searchParams, firstClick]);
+
     // Update the count down every 1 second
     const counterDate = (countDownDate, id) => {
         var now = new Date().getTime();
@@ -137,6 +226,11 @@ function Products() {
 
     return (
         <div className='carouselBody'>
+            <Backdrop
+                sx={{ color: 'var(--base-color)', zIndex: 10000 }}
+                open={isloading}>
+                <CircularProgress color="inherit" />
+            </Backdrop>
             <div className='filterBlock'>
                 {
                     Object.keys(big).map((data, key) => (
@@ -151,7 +245,7 @@ function Products() {
                                 value={attrState[data] !== undefined ? attrState[data] : []}
                                 onChange={handleChange}
                                 input={<OutlinedInput label={data} />}
-                                renderValue={(selected) => selected.join(', ')}
+                                renderValue={(selected) => data + ' ' + selected.length}
                                 MenuProps={MenuProps}
                                 name={data}
                             >
@@ -159,9 +253,9 @@ function Products() {
                                     Object.values(big)[key] !== undefined ?
                                         Object.values(big)[key].map((data2, key2) => {
                                             return data === data2.type ?
-                                                <MenuItem key={key2} value={data2.value}>
+                                                <MenuItem key={key2} value={data2.id}>
                                                     <Checkbox checked={
-                                                        attrState[data] !== undefined ? attrState[data].indexOf(data2.value) > -1 : false
+                                                        attrState[data] !== undefined ? attrState[data].indexOf(data2.id) > -1 : false
                                                     } />
                                                     <ListItemText primary={data2.value} />
                                                 </MenuItem>
@@ -205,7 +299,6 @@ function Products() {
                         </div>
                     ))
                 }
-                {console.log(big)}
             </div>
         </div>
     );
