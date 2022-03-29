@@ -220,7 +220,7 @@ function Products() {
             setfinishdate([])
             setProductImage([])
             for (let index = 0; index < [...new Set(lastelemrnts)].length; index++) {
-                console.log([...new Set(lastelemrnts)][1])
+                // console.log([...new Set(lastelemrnts)][1])
                 axios.get([...new Set(lastelemrnts)][index] + '&include=media', {
                     headers: {
                         "content-type": "application/json",
@@ -242,7 +242,6 @@ function Products() {
                         }
                     }
                     //setlastelemrnts([])
-                    //setelementShow([])
                 })
             }
         }
