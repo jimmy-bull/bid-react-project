@@ -14,6 +14,8 @@ import Select from '@mui/material/Select';
 import Checkbox from '@mui/material/Checkbox';
 import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
+import Alert from '@mui/material/Alert';
+
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
 const MenuProps = {
@@ -36,6 +38,9 @@ function Products() {
     const [firstClick, setfirstClick] = useState(0);
     let [searchParams, setSearchParams] = useSearchParams();
     const [isloading, setisloading] = useState(false);
+    const [noResult, setnoResult] = useState(false);
+    const [elementShow, setelementShow] = useState([]);
+    const [lastelemrnts, setlastelemrnts] = useState([]);
 
     useLayoutEffect(() => {
         axios.get(_GLobal_Link.link + "product?filter[f_catid]=" + id + "&include=media", {
@@ -96,8 +101,9 @@ function Products() {
         setattrState(prev => {
             return { ...prev, [name]: value }
         })
-        setSearchParams({ [name]: value })
+        // setSearchParams({ [name]: value })
         setfirstClick(1)
+        console.log(attrState)
     };
     useEffect(() => {
         setSearchParams(attrState)
@@ -107,108 +113,141 @@ function Products() {
         if (firstClick === 1) {
             setisloading(true)
             let tableAT = []
+            let entryFirst = []
+            let existe = ''
             for (const entry of searchParams.entries()) {
-                tableAT.push('filter[f_attrid][]=' + entry[1]);
-            }
-            if (tableAT.length > 0) {
-                //  console.log(_GLobal_Link.link + "product?include=media&" + tableAT.join('&') + "&filter[f_catid]=" + id)
-                axios.get(_GLobal_Link.link + "product?include=media&" + tableAT.join('&') + "&filter[f_catid]=" + id, {
-                    headers: {
-                        "content-type": "application/json",
-                        'Access-Control-Allow-Credentials': true,
-                        'Access-Control-Allow-Origin': true
-                    },
-                }).then((res) => {
-                    setProductImage([])
-                    setisloading(false)
-                    for (let index = 0; index < res.data.data.length; index++) {
-                        setProductsid((prev) => [...prev, [res.data.data[index].attributes['product.id']]])
-                        setProductsName((prev) => [...prev, [res.data.data[index].attributes['product.label']]])
-                        setfinishdate((prev) => [...prev, [res.data.data[index].attributes['product.dateend']]])
-                        for (let index2 = 0; index2 < 1; index2++) {
-                            for (let index3 = 0; index3 < res.data.included.length; index3++) {
-                                if (res.data.included[index3].id === res.data.data[index].relationships.media.data[index2].id) {
-                                    setProductImage((prev) => [...prev, [res.data.included[index3].attributes['media.url']]])
-                                }
-                            }
+                if (entryFirst.length > 0) {
+                    for (let index = 0; index < entryFirst.length; index++) {
+                        if (entryFirst[index] === entry[0]) {
+                            existe = 'yes'
+                        } else {
+                            existe = 'no'
                         }
                     }
-                })
+                    if (existe === 'yes') {
+                        tableAT.push('filter[f_optid][]=' + entry[1]);
+                        axios.get(_GLobal_Link.link + "product?include=media&" + tableAT.join('&') + "&filter[f_catid]=" + id, {
+                            headers: {
+                                "content-type": "application/json",
+                                'Access-Control-Allow-Credentials': true,
+                                'Access-Control-Allow-Origin': true
+                            },
+                        }).then((res) => {
+                            setProductImage([])
+                            setisloading(false)
+                            for (let index = 0; index < res.data.data.length; index++) {
+                                setProductsid((prev) => [...prev, [res.data.data[index].attributes['product.id']]])
+                                setProductsName((prev) => [...prev, [res.data.data[index].attributes['product.label']]])
+                                setfinishdate((prev) => [...prev, [res.data.data[index].attributes['product.dateend']]])
+                                for (let index2 = 0; index2 < 1; index2++) {
+                                    for (let index3 = 0; index3 < res.data.included.length; index3++) {
+                                        if (res.data.included[index3].id === res.data.data[index].relationships.media.data[index2].id) {
+                                            setProductImage((prev) => [...prev, [res.data.included[index3].attributes['media.url']]])
+                                        }
+                                    }
 
-                // let table = []
-                // axios.get(_GLobal_Link.link + "product?include=media&" + tableAT.join('&') + "&filter[f_catid]=" + id + "&include=attribute", {
-                //     headers: {
-                //         "content-type": "application/json",
-                //         'Access-Control-Allow-Credentials': true,
-                //         'Access-Control-Allow-Origin': true
-                //     },
-                // }).then((res) => {
-                //     for (let index = 0; index < res.data.included.length; index++) {
-                //         table.push({
-                //             type: res.data.included[index].attributes["attribute.type"],
-                //             value: res.data.included[index].attributes["attribute.label"],
-                //             id: res.data.included[index].attributes["attribute.id"]
-                //         })
-                //     }
-                //     let result = table.reduce(function (r, a) {
-                //         r[a.type] = r[a.type] || [];
-                //         r[a.type].push(a);
-                //         return r;
-                //     }, Object.create(null));
-                //     setBig(result);
-                // })
-            } else {
-                setProductImage([])
-                //setBig([])
-                axios.get(_GLobal_Link.link + "product?filter[f_catid]=" + id + "&include=media", {
-                    headers: {
-                        "content-type": "application/json",
-                        'Access-Control-Allow-Credentials': true,
-                        'Access-Control-Allow-Origin': true
-                    },
-                }).then((res) => {
-                    setisloading(false)
-                    for (let index = 0; index < res.data.data.length; index++) {
-                        setProductsid((prev) => [...prev, [res.data.data[index].attributes['product.id']]])
-                        setProductsName((prev) => [...prev, [res.data.data[index].attributes['product.label']]])
-                        setfinishdate((prev) => [...prev, [res.data.data[index].attributes['product.dateend']]])
-                        for (let index2 = 0; index2 < 1; index2++) {
-                            for (let index3 = 0; index3 < res.data.included.length; index3++) {
-                                if (res.data.included[index3].id === res.data.data[index].relationships.media.data[index2].id) {
-                                    setProductImage((prev) => [...prev, [res.data.included[index3].attributes['media.url']]])
+                                }
+                                // console.log(res.data.data[index].links.self.href)
+                                setelementShow(prev => [...prev, res.data.data[index].links.self.href])
+                            }
+                            if (res.data.data.length === 0) {
+                                setnoResult(true)
+                            } else {
+                                setnoResult(false)
+                            }
+                        })
+                    }
+                    else if (existe === 'no') {
+                        tableAT = []
+                        tableAT.push('filter[f_optid][]=' + entry[1]);
+                        axios.get(_GLobal_Link.link + "product?include=media&" + tableAT.join('&') + "&filter[f_catid]=" + id, {
+                            headers: {
+                                "content-type": "application/json",
+                                'Access-Control-Allow-Credentials': true,
+                                'Access-Control-Allow-Origin': true
+                            },
+                        }).then((res) => {
+                            // console.log(elementShow)
+                            for (let index = 0; index < res.data.data.length; index++) {
+                                for (let index2 = 0; index2 < [...new Set(elementShow)].length; index2++) {
+                                    if ([...new Set(elementShow)][index2] === res.data.data[index].links.self.href) {
+                                        setlastelemrnts(prev => [...prev, [...new Set(elementShow)][index2]])
+                                    }
                                 }
                             }
-                        }
+                        })
                     }
-                })
-
-                // let table = []
-                // axios.get(_GLobal_Link.link + "product?filter[f_catid]=" + id + "&include=attribute", {
-                //     headers: {
-                //         "content-type": "application/json",
-                //         'Access-Control-Allow-Credentials': true,
-                //         'Access-Control-Allow-Origin': true
-                //     },
-                // }).then((res) => {
-                //     setisloading(false)
-                //     for (let index = 0; index < res.data.included.length; index++) {
-                //         table.push({
-                //             type: res.data.included[index].attributes["attribute.type"],
-                //             value: res.data.included[index].attributes["attribute.label"],
-                //             id: res.data.included[index].attributes["attribute.id"]
-                //         })
-                //     }
-                //     let result = table.reduce(function (r, a) {
-                //         r[a.type] = r[a.type] || [];
-                //         r[a.type].push(a);
-                //         return r;
-                //     }, Object.create(null));
-                //     setBig(result);
-                // })
+                } else if (entryFirst.length === 0) {
+                    tableAT.push('filter[f_optid][]=' + entry[1]);
+                    axios.get(_GLobal_Link.link + "product?include=media&" + tableAT.join('&') + "&filter[f_catid]=" + id, {
+                        headers: {
+                            "content-type": "application/json",
+                            'Access-Control-Allow-Credentials': true,
+                            'Access-Control-Allow-Origin': true
+                        },
+                    }).then((res) => {
+                        setProductImage([])
+                        setisloading(false)
+                        for (let index = 0; index < res.data.data.length; index++) {
+                            setProductsid((prev) => [...prev, [res.data.data[index].attributes['product.id']]])
+                            setProductsName((prev) => [...prev, [res.data.data[index].attributes['product.label']]])
+                            setfinishdate((prev) => [...prev, [res.data.data[index].attributes['product.dateend']]])
+                            for (let index2 = 0; index2 < 1; index2++) {
+                                for (let index3 = 0; index3 < res.data.included.length; index3++) {
+                                    if (res.data.included[index3].id === res.data.data[index].relationships.media.data[index2].id) {
+                                        setProductImage((prev) => [...prev, [res.data.included[index3].attributes['media.url']]])
+                                    }
+                                }
+                            }
+                            setelementShow(prev => [...prev, res.data.data[index].links.self.href])
+                        }
+                        if (res.data.data.length === 0) {
+                            setnoResult(true)
+                        } else {
+                            setnoResult(false)
+                        }
+                    })
+                }
+                entryFirst.push(entry[0]);
             }
         }
     }, [searchParams, firstClick]);
 
+    useEffect(() => {
+        if (lastelemrnts.length > 0) {
+            setProductsid([])
+            setProductsName([])
+            setfinishdate([])
+            setProductImage([])
+            for (let index = 0; index < [...new Set(lastelemrnts)].length; index++) {
+                console.log([...new Set(lastelemrnts)][1])
+                axios.get([...new Set(lastelemrnts)][index] + '&include=media', {
+                    headers: {
+                        "content-type": "application/json",
+                        'Access-Control-Allow-Credentials': true,
+                        'Access-Control-Allow-Origin': true
+                    },
+                }).then((res) => {
+                    console.log(res)
+                    for (let index = 0; index < res.data.data.length; index++) {
+                        setProductsid((prev) => [...prev, [res.data.data[index].attributes['product.id']]])
+                        setProductsName((prev) => [...prev, [res.data.data[index].attributes['product.label']]])
+                        setfinishdate((prev) => [...prev, [res.data.data[index].attributes['product.dateend']]])
+                        for (let index2 = 0; index2 < 1; index2++) {
+                            for (let index3 = 0; index3 < res.data.included.length; index3++) {
+                                if (res.data.included[index3].id === res.data.data[index].relationships.media.data[index2].id) {
+                                    setProductImage((prev) => [...prev, [res.data.included[index3].attributes['media.url']]])
+                                }
+                            }
+                        }
+                    }
+                    //setlastelemrnts([])
+                    //setelementShow([])
+                })
+            }
+        }
+    }, [lastelemrnts])
+    //const [lastelemrnts, setlastelemrnts] = useState([]);
     // Update the count down every 1 second
     const counterDate = (countDownDate, id) => {
         var now = new Date().getTime();
@@ -223,7 +262,6 @@ function Products() {
             document.getElementById(id).innerHTML = days + "d " + hours + "h " + minutes + "m " + seconds + "s ";
         }
     }
-
     return (
         <div className='carouselBody'>
             <Backdrop
@@ -300,6 +338,13 @@ function Products() {
                     ))
                 }
             </div>
+            {
+                noResult === true ?
+                    <div style={{ display: 'flex', flex: 1, alignSelf: 'center', justifyContent: 'center' }}>
+                        <Alert severity="error">No result ! Try another search term or check spelling.</Alert>
+                    </div>
+                    : <></>
+            }
         </div>
     );
 }
