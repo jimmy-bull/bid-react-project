@@ -41,7 +41,7 @@ function Products() {
     const [elementShow, setelementShow] = useState([]);
     const [lastelemrnts, setlastelemrnts] = useState([]);
     const [FinalShow, setFinalShow] = useState([]);
-
+    const [resutArray, setresutArray] = useState([]);
     useLayoutEffect(() => {
         axios.get(_GLobal_Link.link + "product?filter[f_catid]=" + id + "&include=media", {
             headers: {
@@ -111,7 +111,10 @@ function Products() {
         if (Object.keys(attrState).length > 0) {
             let tableAT = []
             let elementsS = [];
-
+            let bigFinal = []
+            //let resutArray = []
+            let startArray = []
+            let test = []
             Object.keys(attrState).map((data, key) => {
                 for (let index = 0; index < attrState[data].length; index++) {
                     temporyText += 'filter[f_optid][]=' + attrState[data][index] + '&'
@@ -120,15 +123,11 @@ function Products() {
                 temporyText = '';
                 return tableAT;
             })
-            // console.log(tableAT.length)
             for (let index = 0; index < tableAT.length; index++) {
-                if (Object.values(tableAT[index]).toString() === '') {
-                    delete tableAT[Object.keys(tableAT[index]).toString()];
-                    alert()
+                if (tableAT[index][Object.keys(tableAT[index])] === '') {
+                    delete tableAT[index][Object.keys(tableAT[index])];
                 }
                 let finalData = [];
-                console.log(Object.values(tableAT[index]).toString())
-                // if (Object.values(tableAT[index]).toString() !== '') {
                 axios.get(_GLobal_Link.link + "product?include=media&" + Object.values(tableAT[index]).toString() + "&filter[f_catid]=" + id, {
                     headers: {
                         "content-type": "application/json",
@@ -136,27 +135,72 @@ function Products() {
                         'Access-Control-Allow-Origin': true
                     },
                 }).then((res) => {
-
                     for (let index2 = 0; index2 < res.data.data.length; index2++) {
                         finalData.push(res.data.data[index2].links.self.href)
                     }
                     elementsS.push({ [Object.keys(tableAT[index])]: finalData })
                     if (tableAT.length === elementsS.length) {
-                        // console.log(Object.keys(elementsS));
                         for (let index3 = 0; index3 < elementsS.length; index3++) {
-                            //const element = array[index];
-                            console.log(Object.keys(elementsS[index3]));
+                            if (Object.keys(elementsS[index3]).toString() !== '') {
+                                bigFinal.push(elementsS[index3])
 
-                            console.log(elementsS);
+                            }
                         }
                     }
+                    if (bigFinal.length > 0) {
+                        if (bigFinal.length === 1) {
+
+                        }
+                        if (bigFinal.length === 2) {
+                            if (startArray.length === 0) {
+                                startArray.push(bigFinal[0])
+                            }
+                            if (startArray.length > 0) {
+                                for (let index = 0; index < Object.values(startArray[0])[0].length; index++) {
+
+                                    for (let index2 = 0; index2 < Object.values(bigFinal[1])[0].length; index2++) {
+                                        if (Object.values(startArray[0])[0][index] === Object.values(bigFinal[1])[0][index2]) {
+                                            //resutArray.push(Object.values(bigFinal[1])[0][index2])
+                                            setresutArray(prev => [...prev, Object.values(bigFinal[1])[0][index2]])
+                                        }
+                                    }
+                                }
+
+                            }
+                            // 
+                        }
+
+                     //   test.push(resutArray)
+                        if (bigFinal.length > 2) {
+                            console.log(resutArray)
+                            // setTimeout(() => {
+                            //     console.log(resutArray)
+                            // }, 2000);
+
+
+                            // for (let index = 2; index < bigFinal.length; index++) {
+                            //     // const element = array[index];
+                            //     console.log(bigFinal[index])
+
+                            // }
+                        }
+                    }
+
                     finalData = [];
                 })
-                // } else {
-                //     //delete tableAT[Object.keys(tableAT[index]).toString()];
-                //     console.log(Object.values(tableAT[index]).toString())
-                //     console.log(index)
+                //  }
+                // else if (Object.values(tableAT[index]).toString() === '' && tableAT.length > 1) {
+                //     console.log(tableAT.length)
+                //     delete tableAT[index][Object.keys(tableAT[index])];
+                //     tableAT[index][Object.keys(tableAT[index])] = []
+
+                //     let _Index = tableAT.indexOf(tableAT[index])//get  "car" index
+                //     tableAT.splice(_Index);
+
                 // }
+                // if (tableAT.length === 0) {
+
+                // } length - length  = first length; length - length -1
 
             }
 
@@ -175,6 +219,13 @@ function Products() {
 
         }
     }, [attrState]);
+
+
+    // useEffect(() => {
+
+    // }, [resutArray])
+
+
 
     useLayoutEffect(() => {
         if (lastelemrnts.length > 0) {
